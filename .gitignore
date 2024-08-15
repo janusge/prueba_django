@@ -1,0 +1,4 @@
+docker/.env
+docker/mysql/docker-entrypoint-initdb.d/*.sql
+codebase/static/*
+__pycache__/

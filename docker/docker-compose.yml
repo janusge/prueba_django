@@ -1,0 +1,48 @@
+networks:
+  backend:
+    driver: ${NETWORKS_DRIVER}
+
+volumes:
+  mariadb:
+    driver: ${VOLUMES_DRIVER}
+
+services:
+  web:
+    build: 
+        context: ./python
+    container_name: web
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - ${APP_CODE_PATH_HOST}:/code
+    networks:
+      - backend
+    ports:
+      - "8000:8000"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${WORKSPACE_TIMEZONE}
+    depends_on:
+      - database
+### MARIADB ###############################################
+  database:
+    build:
+      context: ./database
+      args:
+        - MARIADB_VERSION=${MARIADB_VERSION}
+    container_name: database
+    volumes:
+      - ${DATA_PATH_HOST}/${MARIADB_DATA_DIR}:/var/lib/mysql
+    ports:
+      - "${MARIADB_PORT}:3306"
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=${WORKSPACE_TIMEZONE}
+      - MYSQL_DATABASE=${MARIADB_DATABASE}
+      - MYSQL_USER=${MARIADB_USER}
+      - MYSQL_PASSWORD=${MARIADB_PASSWORD}
+      - MYSQL_ROOT_PASSWORD=${MARIADB_ROOT_PASSWORD}
+    networks:
+      - backend
+    restart: unless-stopped
